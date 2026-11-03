@@ -1,0 +1,15 @@
+# QuestaSim / ModelSim simulation outputs
+work/
+sim/work/
+sim/transcript
+sim/*.wlf
+sim/modelsim.ini
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Editor & OS files
+.DS_Store
+*.swp
+*~
