@@ -106,7 +106,7 @@ def fir_hardware_model(samples, coeffs, scale_shift=SCALE_SHIFT, data_width=DATA
     shift_reg = [0] * taps
     outputs = []
 
-    round_addend = (1 << (scale_shift - 1)) if scale_shift > 0 else 0
+    base_round = (1 << (scale_shift - 1)) if scale_shift > 0 else 0
     max_d = (1 << (data_width - 1)) - 1
     min_d = -(1 << (data_width - 1))
 
@@ -117,7 +117,8 @@ def fir_hardware_model(samples, coeffs, scale_shift=SCALE_SHIFT, data_width=DATA
         # Multiply & Accumulate with full precision
         acc = sum(shift_reg[k] * coeffs[k] for k in range(taps))
 
-        # Rounding
+        # Symmetric Rounding (Round-Half-Away-From-Zero)
+        round_addend = (base_round - (1 if acc < 0 else 0)) if scale_shift > 0 else 0
         rounded = acc + round_addend
         scaled = rounded >> scale_shift
 

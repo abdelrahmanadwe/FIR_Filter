@@ -121,15 +121,16 @@ def fir_hardware_filter(input_codes, q_coeffs, scale_shift=SCALE_SHIFT, data_wid
     taps = len(q_coeffs)
     shift_reg = np.zeros(taps, dtype=np.int64)
     output_codes = []
-    round_addend = (1 << (scale_shift - 1)) if scale_shift > 0 else 0
+    base_round = (1 << (scale_shift - 1)) if scale_shift > 0 else 0
     max_d = (1 << (data_width - 1)) - 1
     min_d = -(1 << (data_width - 1))
 
     for x in input_codes:
         shift_reg = np.roll(shift_reg, 1)
         shift_reg[0] = x
-        acc = np.sum(shift_reg * q_coeffs)
-        # Round and arithmetic right shift
+        acc = int(np.sum(shift_reg * q_coeffs))
+        # Symmetric Rounding (Round-Half-Away-From-Zero) and arithmetic right shift
+        round_addend = (base_round - (1 if acc < 0 else 0)) if scale_shift > 0 else 0
         rounded = acc + round_addend
         scaled = rounded >> scale_shift
         # Saturation

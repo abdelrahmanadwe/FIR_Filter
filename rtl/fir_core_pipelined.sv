@@ -200,7 +200,8 @@ module fir_core_pipelined #(
 
     always_comb begin
         if (reg_scale_shift > 0) begin
-            round_addend = (1'b1 << (reg_scale_shift - 1));
+            // Symmetric rounding (round-half-away-from-zero)
+            round_addend = ({{ACC_WIDTH{1'b0}}, 1'b1} << (reg_scale_shift - 1)) - {{ACC_WIDTH{1'b0}}, final_sum[ACC_WIDTH-1]};
         end else begin
             round_addend = '0;
         end
