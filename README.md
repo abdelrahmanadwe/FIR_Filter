@@ -15,7 +15,7 @@ A fully parameterized, high-throughput SystemVerilog hardware IP implementing a 
 - **Control & Configuration (AXI4-Lite):**
   - Full runtime control plane supporting ARM AMBA AXI4-Lite slave specification.
   - Runtime programmable filter coefficients ($h_0, h_1, \dots, h_{N-1}$): change filter response (Low-pass, High-pass, Band-pass) on-the-fly without FPGA re-synthesis.
-  - Runtime dynamic tap scaling: select any active number of taps from $1$ to $\text{MAX\_TAPS}$.
+  - Runtime dynamic tap scaling: select any active number of taps from 1 to `MAX_TAPS`.
   - Runtime output scale shift, filter enable, delay-line soft reset, and zero-latency hardware bypass.
 - **Fixed-Point Arithmetic & Saturation:**
   - Full-precision internal accumulation with round-to-nearest logic ($+ 2^{\text{shift}-1}$).
@@ -85,7 +85,7 @@ All registers are 32-bit word-aligned:
 | :--- | :--- | :---: | :--- |
 | **`0x00`** | `CTRL_REG` | R/W | • **Bit 0**: `ENABLE` (1 = Filter Active, 0 = Disabled).<br>• **Bit 1**: `SOFT_RESET` (Self-clearing pulse; flushes sample delay line to 0).<br>• **Bit 2**: `BYPASS` (1 = Pass input directly to output, 0 = Filtered output). |
 | **`0x04`** | `STATUS_REG` | R/W1C | • **Bit 0**: `ACTIVE` (Read-only; 1 when samples are in flight).<br>• **Bit 1**: `OVERFLOW` (Sticky bit; set on saturation. Write 1 to clear). |
-| **`0x08`** | `ACTIVE_TAPS` | R/W | Number of active taps ($1 \le N \le \text{MAX\_TAPS}$). Default: `MAX_TAPS`. |
+| **`0x08`** | `ACTIVE_TAPS` | R/W | Number of active taps ($1 \le N \le$ `MAX_TAPS`). Default: `MAX_TAPS`. |
 | **`0x0C`** | `SCALE_REG` | R/W | Right-shift amount for fixed-point output scaling ($0 \le \text{shift} \le 31$). |
 | **`0x40`** | `COEFF_0` | R/W | Impulse response tap 0 coefficient ($h[0]$). |
 | **`0x44`** | `COEFF_1` | R/W | Impulse response tap 1 coefficient ($h[1]$). |

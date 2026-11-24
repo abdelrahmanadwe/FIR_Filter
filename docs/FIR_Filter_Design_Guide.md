@@ -89,11 +89,11 @@ Real hardware (FPGAs, ASICs) utilizes signed fixed-point integer arithmetic inst
 For a 16-bit signed coefficient:
 * 1 Sign bit + 15 Fractional bits.
 * Scale Factor: $2^{15} = 32{,}768$.
-* Representation: $h_{\text{int}} = \text{round}(h_{\text{float}} \times 2^{\text{COEFF\_WIDTH}-1})$.
+* Representation: $h_{\text{int}} = \text{round}(h_{\text{float}} \times 2^{W_c - 1})$ where $W_c =$ `COEFF_WIDTH`.
 
 ### Why We Scale (Right Shift) by $2^{15}$ Once at the Output:
-* Input sample $x[n]$ is already scaled by $2^{\text{DATA\_WIDTH}-1}$ ($2^{15}$) from the 16-bit ADC.
-* Coefficient $h[k]$ is scaled by $2^{\text{COEFF\_WIDTH}-1}$ ($2^{15}$).
+* Input sample $x[n]$ is already scaled by $2^{W_d - 1}$ ($2^{15}$) from the 16-bit ADC where $W_d =$ `DATA_WIDTH`.
+* Coefficient $h[k]$ is scaled by $2^{W_c - 1}$ ($2^{15}$) where $W_c =$ `COEFF_WIDTH`.
 * Their product is scaled by $2^{15} \times 2^{15} = 2^{30}$.
 * The downstream DAC or processing block expects a 16-bit signed signal scaled by $2^{15}$.
 * Therefore, we perform an arithmetic right shift by **15 bits** ($\text{Product} / 2^{15} = 2^{15}$) to restore the original scale!
