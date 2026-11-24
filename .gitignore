@@ -5,9 +5,14 @@ sim/transcript
 sim/*.wlf
 sim/modelsim.ini
 
-# Python cache
+# Python Virtual Environment & Cache
+.venv/
+venv/
 __pycache__/
 *.py[cod]
+
+# Personal notes (Arabic reference guide kept locally)
+docs/*_ar.md
 
 # Editor & OS files
 .DS_Store

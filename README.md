@@ -49,6 +49,21 @@ A fully parameterized, high-throughput SystemVerilog hardware IP implementing a 
 
 ---
 
+## 📈 End-to-End Physical DSP Verification
+
+The repository includes a complete physical verification script [`tb/end_to_end_dsp_chain.py`](tb/end_to_end_dsp_chain.py) demonstrating the complete analog-to-digital signal flow:
+1. **Continuous-Time Analog Input:** $5.0\text{ kHz}$ audio tone $+ 35.0\text{ kHz}$ high-frequency noise.
+2. **16-bit ADC Model:** Quantization into **$65{,}536$ discrete voltage levels** ($\text{LSB} \approx 30.518\ \mu\text{V}$) with two's complement integer encoding.
+3. **Digital FIR Filter IP:** Hardware fixed-point core filters out stopband noise.
+4. **16-bit DAC & Sinc Reconstruction:** Converts discrete codes back to analog voltage and reconstructs the continuous waveform using Whittaker-Shannon Sinc Interpolation.
+5. **Noise Elimination:** High-frequency noise is eliminated, recovering the original $5\text{ kHz}$ sine wave with an **SNR of $39.22\text{ dB}$**!
+
+![End-to-End DSP Chain](docs/images/end_to_end_dsp_chain.png)
+
+> 📖 **Detailed Technical Guide:** For full mathematical derivations, frequency response curves, and design methodologies, refer to the [**FIR Filter Design Guide**](docs/FIR_Filter_Design_Guide.md).
+
+---
+
 ## 🔌 Hardware Parameters
 
 | Parameter | Default | Description |
@@ -83,6 +98,12 @@ All registers are 32-bit word-aligned:
 
 ```text
 FIR_Filter/
+├── Makefile                  # Root Makefile for one-command build, test, and simulation
+├── requirements.txt          # Python dependencies (numpy, matplotlib)
+├── docs/
+│   ├── FIR_Filter_Design_Guide.md # Full technical guide & mathematical derivations
+│   └── images/
+│       └── end_to_end_dsp_chain.png # High-resolution DSP verification waveform
 ├── rtl/
 │   ├── fir_adder_stage.sv        # Individual pipelined stage in binary adder tree
 │   ├── fir_core_pipelined.sv     # Pipelined multipliers, adder tree, rounder & saturator
@@ -90,37 +111,42 @@ FIR_Filter/
 │   ├── axi4_lite_regfile.sv      # AXI4-Lite Slave CSR with dynamic coefficient RAM
 │   └── fir_filter_top.sv         # Top-level IP integrating Stream and Lite interfaces
 ├── tb/
-│   ├── fir_golden_model.py       # Python script: designs Low-Pass filter & generates vectors
+│   ├── fir_golden_model.py       # Parameterized golden model & stimulus generator
+│   ├── end_to_end_dsp_chain.py   # Physical ADC -> FIR -> DAC -> Interpolation chain
 │   └── fir_filter_top_tb.sv      # Self-checking SystemVerilog testbench (7 comprehensive tests)
 ├── sim/
-│   ├── Makefile                  # Automated compilation & simulation for QuestaSim
+│   ├── Makefile                  # Local simulation Makefile
 │   └── run_sim.sh                # Executable one-click bash simulation runner
 └── README.md
 ```
 
 ---
 
-## 🚀 Simulation & Verification
+## 🚀 Quick Start & Simulation
 
-The testbench tests 7 rigorous operational scenarios:
-1. **AXI4-Lite Register Sanity Check**: Tests default values and register access.
-2. **Dynamic Coefficient Reload**: Writes 16 Q15 Low-Pass coefficients via AXI-Lite and verifies via readback.
-3. **100% Throughput Streaming**: Feeds 128 composite samples (carrier + high-frequency noise) and bit-compares output against the Python Golden Model.
-4. **Heavy Backpressure Test**: Stalls `m_axis_tready` randomly to verify pipeline freeze and skid buffer operation without loss of samples.
-5. **Hardware Bypass Mode**: Verifies samples pass unaltered when bypass bit is asserted.
-6. **Soft Reset Test**: Verifies the internal sample delay line clears to zero instantly.
-7. **Overflow & Saturation Test**: Triggers saturation intentionally, verifying hard limiting to $+32767$ and sticky flag capture.
-
-### Running Simulation (QuestaSim)
-
+### 1. Python Environment (Optional / Automated)
+You can create an isolated virtual environment with all required dependencies:
 ```bash
-cd sim
-./run_sim.sh
+make venv
 ```
 
-Or using `make`:
+### 2. Run Self-Checking RTL Simulation (QuestaSim)
+Execute the complete compilation and test suite in batch mode:
 ```bash
-cd sim
 make sim
 ```
+Or with QuestaSim GUI waveforms:
+```bash
+make sim_gui
+```
 
+### 3. Run End-to-End DSP Physical Simulation
+Run the full ADC $\to$ FIR $\to$ DAC $\to$ Interpolation simulation and generate plots:
+```bash
+make dsp_chain
+```
+
+### 4. Clean Build Artifacts
+```bash
+make clean
+```
